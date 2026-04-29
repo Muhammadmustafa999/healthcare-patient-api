@@ -1,0 +1,16 @@
+# Healthcare Patient API Dependencies
+# Patient Records Management System v2.1
+
+Django==2.2.0
+djangorestframework==3.11.0
+requests==2.20.0
+Pillow==8.0.0
+pyyaml==5.1
+cryptography==2.6.0
+paramiko==2.4.0
+lxml==4.4.0
+psycopg2-binary==2.7.0
+celery==4.2.0
+kombu==4.6.0
+PyJWT==1.7.0
+urllib3==1.24.0
