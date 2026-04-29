@@ -1,0 +1,56 @@
+name: Security Vulnerability Scan
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Trivy Scan → CI/CD ThreatIntel
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run Trivy Scan
+        run: |
+          trivy fs . --format json --output trivy-results.json --exit-code 0
+
+      - name: Upload to CI/CD ThreatIntel
+        run: |
+          python3 -c "
+          import json, urllib.request
+
+          with open('trivy-results.json') as f:
+              trivy_data = json.load(f)
+
+          payload = json.dumps({
+              'repo_name': 'healthcare-patient-api',
+              'branch': 'main',
+              'commit_sha': '${{ github.sha }}',
+              'trivy_results': trivy_data
+          }).encode('utf-8')
+
+          req = urllib.request.Request(
+              '${{ secrets.THREATINTEL_API_URL }}/api/scan/upload/',
+              data=payload,
+              headers={
+                  'Authorization': 'Token ${{ secrets.THREATINTEL_TOKEN }}',
+                  'Content-Type': 'application/json'
+              }
+          )
+          try:
+              response = urllib.request.urlopen(req, timeout=30)
+              result = json.loads(response.read().decode())
+              print('Scan uploaded successfully')
+              print(f'CVEs Found: {result.get(\"total_vulnerabilities\", 0)}')
+              print(f'Policy Status: {result.get(\"policy_status\", \"unknown\")}')
+          except Exception as e:
+              print(f'Upload warning: {e}')
+          "
