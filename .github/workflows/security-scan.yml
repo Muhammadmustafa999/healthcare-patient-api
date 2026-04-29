@@ -38,7 +38,7 @@ jobs:
           }).encode('utf-8')
 
           req = urllib.request.Request(
-              '${{ secrets.THREATINTEL_API_URL }}/api/scan/upload/',
+              '${{ secrets.THREATINTEL_API_URL }} https://nuncupative-ocie-unmodishly.ngrok-free.dev -> http://localhost:8000 
               data=payload,
               headers={
                   'Authorization': 'Token ${{ secrets.THREATINTEL_TOKEN }}',
